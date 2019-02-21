@@ -21,7 +21,7 @@ sub help_msg {
    print <<'EOF'
 Usage: ./zoneupdate.pl [-c /etc/zoneupdate.conf] [-h] [-d] -z <zone> -o <operation> -n <record name> -t <ttl> -r <record type> -v <value>
 -c, --config   your config file to use
--o, --operation  add or delete, default: add
+-o, --operation  add, delete or update, default: add
 -z, --zone     your zone, ex: thorko.de
 -n, --name     the record name to use: pt.thorko.de
 -t, --ttl      the ttl: default 300
@@ -46,7 +46,12 @@ sub write_nsupdate_file {
 
   open(my $fh, '>', $update_file) or die "Couldn't write to file: $update_file $!";
   print $fh "server $server\nzone $zone\n";
-  print $fh "update $ops $rn $ttl $record $value\n";
+  if ( $ops =~ /update/ ) {
+	print $fh "update delete $rn $ttl $record\n";
+	print $fh "update add $rn $ttl $record $value\n";
+  } else {
+  	print $fh "update $ops $rn $ttl $record $value\n";
+  }
   print $fh "send\n";
   close $fh;
 }
